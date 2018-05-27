@@ -23,10 +23,9 @@
              (elapsed (- end start)))
         (format t "~a~%" elapsed)))))
 
-(defun main ()
-  (let* ((args (cdr sb-ext:*posix-argv*))
-        (arg-len (length args))
-        (count (if (> arg-len 0) (parse-integer (car args)) 0)))
+(defun main (args)
+  (let* ((arg-len (length args))
+         (count (if (> arg-len 0) (parse-integer (car args)) 0)))
     (declare (type list args)
              (type fixnum arg-len count))
     (format t "Args: ~a~% args" args)
@@ -41,4 +40,7 @@
            (run count)))))
 
 (defun build ()
-  (sb-ext:save-lisp-and-die "hello-cl" :toplevel #'main :executable t))
+  #+sbcl
+   (sb-ext:save-lisp-and-die "hello-cl" :toplevel #'main :executable t)
+  #-sbcl
+   (format t "Don't know how to build on this platform.~%"))
