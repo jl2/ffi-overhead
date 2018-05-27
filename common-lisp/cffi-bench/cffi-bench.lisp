@@ -6,7 +6,7 @@
 
 (declaim (optimize (speed 3) (safety 0) (debug 0)))
 
-(cffi:load-foreign-library "libnewplus.so" :search-path "../../newplus/")
+(cffi:load-foreign-library "libnewplus.so" :search-path "/home/jeremiah/src/lisp/cffi-bench/")
 (declaim (inline plusone current-timestamp))
 
 (cffi:defcfun "plusone" :int (x :int))
@@ -24,20 +24,21 @@
         (format t "~a~%" elapsed)))))
 
 (defun main ()
-  (let ((args (cdr sb-ext:*posix-argv*)))
-    (declare (type list args))
+  (let* ((args (cdr sb-ext:*posix-argv*))
+        (arg-len (length args))
+        (count (if (> arg-len 0) (parse-integer (car args)) 0)))
+    (declare (type list args)
+             (type fixnum arg-len count))
     (format t "Args: ~a~% args" args)
 
-    (cffi:load-foreign-library "libnewplus.so" :search-path "../../newplus/")
+    (cffi:load-foreign-library "libnewplus.so" :search-path "/home/jeremiah/src/lisp/cffi-bench/")
 
-    (cond ((= (length args) 0)
+    (cond ((= arg-len 0)
            (format t "First arg (0 - 2000000000) is required.~%"))
+          ((or (<= count 0) (> count 2000000000))
+           (format t "Must be a positive number not exceeding 2 billion.~%"))
           (t
-           (let ((count (parse-integer (car args))))
-             (declare (type fixnum count))
-             (if (or (<= count 0) (> count 2000000000))
-                 (format t "Must be a positive number not exceeding 2 billion.~%")
-                 (run count)))))))
+           (run count)))))
 
 (defun build ()
   (sb-ext:save-lisp-and-die "hello-cl" :toplevel #'main :executable t))
