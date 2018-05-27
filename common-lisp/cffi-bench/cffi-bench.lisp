@@ -6,7 +6,7 @@
 
 (declaim (optimize (speed 3) (safety 0) (debug 0)))
 
-
+(cffi:load-foreign-library "libnewplus.so" :search-path "../../newplus/")
 (declaim (inline plusone current-timestamp))
 
 (cffi:defcfun "plusone" :int (x :int))
@@ -18,7 +18,7 @@
   (with-foreign-objects ((x :long 0))
     (let ((start (current-timestamp)))
       (loop for i fixnum upto count do
-           (setf (mem-ref x :int) (plusone (mem-ref x :int))))
+           (setf (mem-ref x :int) (foreign-funcall "plusone" :int (mem-ref x :int) :int)))
       (let* ((end (current-timestamp))
              (elapsed (- end start)))
         (format t "~a~%" elapsed)))))
@@ -27,6 +27,8 @@
   (let ((args (cdr sb-ext:*posix-argv*)))
     (declare (type list args))
     (format t "Args: ~a~% args" args)
+
+    (cffi:load-foreign-library "libnewplus.so" :search-path "../../newplus/")
 
     (cond ((= (length args) 0)
            (format t "First arg (0 - 2000000000) is required.~%"))
